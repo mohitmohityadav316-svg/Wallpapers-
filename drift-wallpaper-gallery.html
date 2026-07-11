@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DRIFT — 3D Wallpaper Gallery</title>
+<meta name="description" content="1800+ wallpapers across 15 categories. Download for PC or mobile.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#08080c;
+    --bg-elev:#111118;
+    --card:#15151f;
+    --card-hover:#1c1c29;
+    --violet:#8b5cf6;
+    --magenta:#ec4899;
+    --cyan:#22d3ee;
+    --text:#f4f4f7;
+    --muted:#8b8b99;
+    --border: rgba(244,244,247,0.08);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--violet); color:#fff; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  img{ display:block; max-width:100%; }
+
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.02em; }
+  .display{ font-family:'Space Grotesk', sans-serif; }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px clamp(20px,4vw,56px);
+    background:linear-gradient(to bottom, rgba(8,8,12,0.9), transparent);
+    backdrop-filter:blur(6px);
+  }
+  .logo{ display:flex; align-items:center; gap:10px; font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.15rem; }
+  .logo-mark{ width:26px; height:26px; border-radius:7px; background:linear-gradient(135deg,var(--violet),var(--magenta)); position:relative; flex-shrink:0; }
+  .logo-mark::after{ content:''; position:absolute; inset:6px; border-radius:3px; background:var(--bg); }
+  .nav-count{ color:var(--muted); font-size:0.78rem; }
+  .header-actions{ display:flex; align-items:center; gap:18px; }
+  .search-box{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    border-radius:999px; padding:8px 16px; width:min(240px,40vw);
+    transition:border-color .2s, background .2s;
+  }
+  .search-box:focus-within{ border-color:var(--violet); background:rgba(139,92,246,0.08); }
+  .search-box input{ background:none; border:none; outline:none; color:var(--text); font-size:0.85rem; width:100%; font-family:inherit; }
+  .search-box input::placeholder{ color:var(--muted); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; height:100svh; min-height:560px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 20px;
+    overflow:hidden;
+  }
+  #hero-canvas{ position:absolute; inset:0; z-index:0; }
+  .hero::before{
+    content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 30%, transparent 0%, rgba(8,8,12,0.4) 55%, var(--bg) 92%);
+  }
+  .hero-inner{ position:relative; z-index:2; max-width:760px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--cyan);
+    background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25);
+    padding:6px 14px; border-radius:999px; margin-bottom:22px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); animation:pulse 2s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  h1.hero-title{
+    font-size:clamp(2.6rem, 8vw, 5.6rem);
+    line-height:0.98; font-weight:700; letter-spacing:-0.03em;
+    margin-bottom:20px;
+  }
+  h1.hero-title .grad{
+    background:linear-gradient(100deg,var(--violet),var(--magenta) 60%,var(--cyan));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero-sub{ color:var(--muted); font-size:clamp(0.95rem,2vw,1.15rem); max-width:520px; margin:0 auto 34px; line-height:1.55; }
+
+  .hero-cta{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 26px; border-radius:11px; font-weight:600; font-size:0.92rem;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .btn-primary{ background:var(--text); color:#0a0a0e; }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 30px rgba(244,244,247,0.15); }
+  .btn-ghost{ border:1px solid var(--border); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--violet); background:rgba(139,92,246,0.08); transform:translateY(-2px); }
+
+  .scroll-cue{
+    position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:2;
+    color:var(--muted); font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-cue .line{ width:1px; height:30px; background:linear-gradient(var(--muted), transparent); animation:drop 1.8s infinite; }
+  @keyframes drop{ 0%{transform:scaleY(0); transform-origin:top;} 50%{transform:scaleY(1); transform-origin:top;} 51%{transform-origin:bottom;} 100%{transform:scaleY(0); transform-origin:bottom;} }
+
+  /* ---------- CATEGORY RAIL ---------- */
+  .rail-section{ padding:70px clamp(20px,4vw,56px) 20px; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:10px; }
+  .section-head h2{ font-family:'Space Grotesk',sans-serif; font-size:1.5rem; font-weight:600; }
+  .section-head .tag{ color:var(--muted); font-size:0.8rem; }
+
+  .cat-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px;
+  }
+  .cat-pill{
+    position:relative; border-radius:16px; padding:18px 16px; min-height:108px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    border:1px solid var(--border); background:var(--card);
+    cursor:pointer; overflow:hidden;
+    transition:transform .25s ease, border-color .25s ease, background .25s ease;
+    transform-style:preserve-3d;
+  }
+  .cat-pill:hover{ transform:translateY(-4px) rotateX(4deg); border-color:var(--accent,var(--violet)); background:var(--card-hover); }
+  .cat-pill.active{ border-color:var(--accent,var(--violet)); background:var(--card-hover); box-shadow:0 0 0 1px var(--accent,var(--violet)) inset; }
+  .cat-pill .icon{ font-size:1.6rem; filter:saturate(1.2); }
+  .cat-pill .name{ font-weight:600; font-size:0.95rem; }
+  .cat-pill .count{ color:var(--muted); font-size:0.72rem; }
+  .cat-pill .glow{
+    position:absolute; width:120px; height:120px; border-radius:50%;
+    background:var(--accent,var(--violet)); opacity:0.18; filter:blur(30px);
+    top:-40px; right:-40px; pointer-events:none;
+  }
+
+  /* ---------- GALLERY ---------- */
+  .gallery-section{ padding:40px clamp(20px,4vw,56px) 100px; min-height:400px; }
+  .gallery-toolbar{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid var(--border);
+  }
+  .gallery-title{ display:flex; align-items:center; gap:12px; }
+  .gallery-title .icon{ font-size:1.7rem; }
+  .gallery-title h3{ font-family:'Space Grotesk',sans-serif; font-size:1.35rem; font-weight:600; }
+  .gallery-title .count{ color:var(--muted); font-size:0.8rem; }
+
+  .view-toggle{ display:flex; gap:6px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:4px; }
+  .view-toggle button{ padding:7px 14px; border-radius:7px; font-size:0.78rem; font-weight:500; color:var(--muted); transition:all .15s; }
+  .view-toggle button.active{ background:var(--violet); color:#fff; }
+
+  .masonry{
+    columns:5 220px; column-gap:14px;
+  }
+  @media (max-width:1200px){ .masonry{ columns:4 200px; } }
+  @media (max-width:800px){ .masonry{ columns:3 160px; } }
+  @media (max-width:520px){ .masonry{ columns:2 140px; gap:10px;} }
+
+  .wcard{
+    break-inside:avoid; margin-bottom:14px; border-radius:14px; overflow:hidden;
+    position:relative; background:var(--card); border:1px solid var(--border);
+    cursor:pointer; transform-style:preserve-3d; perspective:600px;
+    transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .wcard:hover{ box-shadow:0 20px 40px rgba(0,0,0,0.5); z-index:5; }
+  .wcard img{ width:100%; height:auto; display:block; background:linear-gradient(135deg,#1a1a24,#111118); transition:transform .4s ease, filter .4s ease; }
+  .wcard:hover img{ transform:scale(1.06); }
+  .wcard .overlay{
+    position:absolute; inset:0; display:flex; align-items:flex-end; padding:12px;
+    background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%);
+    opacity:0; transition:opacity .25s ease;
+  }
+  .wcard:hover .overlay{ opacity:1; }
+  .wcard .overlay span{ font-size:0.72rem; color:var(--muted); }
+  .wcard .dl-quick{
+    position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
+    background:rgba(8,8,12,0.6); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.15);
+    display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(-6px);
+    transition:opacity .2s, transform .2s;
+  }
+  .wcard:hover .dl-quick{ opacity:1; transform:translateY(0); }
+  .wcard .dl-quick:hover{ background:var(--violet); }
+
+  .skeleton{ background:linear-gradient(100deg, var(--card) 30%, var(--card-hover) 50%, var(--card) 70%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+  @keyframes shimmer{ 0%{ background-position:200% 0;} 100%{ background-position:-200% 0;} }
+
+  .load-more-wrap{ display:flex; justify-content:center; margin-top:34px; }
+  .load-more{
+    padding:13px 30px; border-radius:11px; border:1px solid var(--border);
+    font-weight:600; font-size:0.88rem; display:flex; align-items:center; gap:10px;
+    transition:border-color .2s, background .2s;
+  }
+  .load-more:hover{ border-color:var(--violet); background:rgba(139,92,246,0.08); }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty-state .icon{ font-size:2.4rem; margin-bottom:12px; }
+
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox{
+    position:fixed; inset:0; z-index:1000; display:none;
+    align-items:center; justify-content:center; padding:24px;
+    background:rgba(4,4,7,0.92); backdrop-filter:blur(10px);
+  }
+  .lightbox.open{ display:flex; }
+  .lb-inner{
+    display:flex; gap:28px; max-width:1100px; width:100%; max-height:88vh;
+    align-items:center;
+  }
+  @media (max-width:800px){ .lb-inner{ flex-direction:column; max-height:92vh; } }
+  .lb-img-wrap{
+    flex:1.3; display:flex; align-items:center; justify-content:center;
+    max-height:88vh; min-width:0;
+  }
+  .lb-img-wrap img{
+    max-height:80vh; max-width:100%; border-radius:14px; object-fit:contain;
+    box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  }
+  .lb-panel{
+    flex:0 0 280px; display:flex; flex-direction:column; gap:18px;
+  }
+  @media (max-width:800px){ .lb-panel{ flex:none; width:100%; max-width:400px; } }
+  .lb-panel h4{ font-family:'Space Grotesk',sans-serif; font-size:1.2rem; }
+  .lb-panel .meta{ color:var(--muted); font-size:0.82rem; display:flex; flex-direction:column; gap:4px; }
+  .lb-dl-group{ display:flex; flex-direction:column; gap:10px; }
+  .lb-dl-btn{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; border-radius:12px; border:1px solid var(--border); background:var(--card);
+    transition:border-color .2s, background .2s, transform .2s;
+  }
+  .lb-dl-btn:hover{ border-color:var(--violet); background:var(--card-hover); transform:translateY(-1px); }
+  .lb-dl-btn .left{ display:flex; align-items:center; gap:12px; }
+  .lb-dl-btn .platform{ font-weight:600; font-size:0.9rem; }
+  .lb-dl-btn .res{ color:var(--muted); font-size:0.72rem; }
+  .lb-dl-btn .status{ font-size:0.72rem; color:var(--cyan); }
+  .lb-close{
+    position:absolute; top:22px; right:22px; width:42px; height:42px; border-radius:50%;
+    background:rgba(255,255,255,0.06); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+    transition:background .2s;
+  }
+  .lb-close:hover{ background:rgba(255,255,255,0.14); }
+  .lb-nav{
+    position:absolute; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%;
+    background:rgba(255,255,255,0.06); border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    font-size:1.2rem; transition:background .2s;
+  }
+  .lb-nav:hover{ background:rgba(255,255,255,0.14); }
+  .lb-prev{ left:22px; } .lb-next{ right:22px; }
+  @media (max-width:800px){ .lb-nav{ display:none; } }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:40px clamp(20px,4vw,56px) 34px; border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    color:var(--muted); font-size:0.8rem;
+  }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:12px 20px; font-size:0.84rem; z-index:2000; opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s; display:flex; align-items:center; gap:10px;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast .dot{ width:7px; height:7px; border-radius:50%; background:var(--cyan); }
+
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  :focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark" aria-hidden="true"></span>
+    <span>DRIFT <span class="nav-count mono">/ 1,800 wallpapers</span></span>
+  </div>
+  <div class="header-actions">
+    <div class="search-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search categories…" aria-label="Search categories">
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span> 15 categories · PC &amp; mobile ready</div>
+    <h1 class="hero-title display">Wallpapers<br><span class="grad">worth staring at.</span></h1>
+    <p class="hero-sub">Anime, superheroes, gaming, cars, nature, food, couple, cartoon, mythology and more — every wallpaper ships in a phone crop and a desktop crop.</p>
+    <div class="hero-cta">
+      <a href="#categories" class="btn btn-primary">Browse categories</a>
+      <a href="#gallery" class="btn btn-ghost" id="heroRandomBtn">Show me something random</a>
+    </div>
+  </div>
+  <div class="scroll-cue"><span class="line"></span>scroll</div>
+</section>
+
+<section class="rail-section" id="categories">
+  <div class="section-head">
+    <h2 class="display">Categories</h2>
+    <span class="tag mono" id="catTag">15 categories · 120 each</span>
+  </div>
+  <div class="cat-grid" id="catGrid"></div>
+</section>
+
+<section class="gallery-section" id="gallery">
+  <div class="gallery-toolbar">
+    <div class="gallery-title">
+      <span class="icon" id="galIcon">🌸</span>
+      <div>
+        <h3 id="galName">Anime</h3>
+        <span class="count mono" id="galCount">0 shown of 120</span>
+      </div>
+    </div>
+    <div class="view-toggle" role="group" aria-label="Grid density">
+      <button data-size="cozy" class="active">Cozy</button>
+      <button data-size="compact">Compact</button>
+    </div>
+  </div>
+  <div class="masonry" id="masonry"></div>
+  <div class="load-more-wrap" id="loadMoreWrap">
+    <button class="load-more" id="loadMoreBtn">Load 30 more <span class="mono" id="loadMoreCount"></span></button>
+  </div>
+</section>
+
+<footer>
+  <span>DRIFT — a demo wallpaper gallery template.</span>
+  <span class="mono">Built with three.js</span>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous wallpaper">‹</button>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next wallpaper">›</button>
+  <div class="lb-inner">
+    <div class="lb-img-wrap"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-panel">
+      <h4 id="lbTitle">Anime · 001</h4>
+      <div class="meta">
+        <span id="lbMeta1">Category: Anime</span>
+        <span id="lbMeta2">ID: anime-001</span>
+      </div>
+      <div class="lb-dl-group">
+        <button class="lb-dl-btn" id="dlPc">
+          <span class="left"><span>🖥️</span><span><span class="platform">PC wallpaper</span><br><span class="res">1920 × 1080</span></span></span>
+          <span class="status">Download</span>
+        </button>
+        <button class="lb-dl-btn" id="dlMobile">
+          <span class="left"><span>📱</span><span><span class="platform">Mobile wallpaper</span><br><span class="res">1080 × 1920</span></span></span>
+          <span class="status">Download</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg">Downloaded</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =========================================================================
+   CONFIG — this is the ONLY block you need to touch to plug in real,
+   licensed artwork per category (your own CDN, a stock API, etc).
+   Right now every category is generated from a free open photo source
+   (Picsum/Unsplash-backed) as a working placeholder, since real
+   copyrighted character art (anime/Marvel/game franchises) can't be
+   redistributed here. Swap `imageUrl()` below to point at your own source
+   — everything else (grid, lightbox, PC/mobile download) already works.
+   ========================================================================= */
+const PER_CATEGORY = 120;
+const CATEGORIES = [
+  { id:'anime',     name:'Anime',              icon:'🌸', accent:'#ec4899' },
+  { id:'super',     name:'Superheroes',        icon:'🦸', accent:'#8b5cf6' },
+  { id:'gaming',    name:'Gaming',             icon:'🎮', accent:'#22d3ee' },
+  { id:'cars',      name:'Cars',               icon:'🏎️', accent:'#f97316' },
+  { id:'nature',    name:'Nature',             icon:'🌿', accent:'#22c55e' },
+  { id:'food',      name:'Food',               icon:'🍜', accent:'#f59e0b' },
+  { id:'couple',    name:'Couple',             icon:'💞', accent:'#f43f5e' },
+  { id:'cartoon',   name:'Cartoon',            icon:'🎨', accent:'#a855f7' },
+  { id:'gods',      name:'Gods & Mythology',   icon:'🕉️', accent:'#eab308' },
+  { id:'space',     name:'Space',              icon:'🌌', accent:'#6366f1' },
+  { id:'abstract',  name:'Abstract',           icon:'🌀', accent:'#14b8a6' },
+  { id:'animals',   name:'Animals',            icon:'🐾', accent:'#84cc16' },
+  { id:'cyberpunk', name:'Cyberpunk',          icon:'🤖', accent:'#d946ef' },
+  { id:'sports',    name:'Sports',             icon:'⚽', accent:'#3b82f6' },
+  { id:'minimal',   name:'Minimal',            icon:'◻️', accent:'#94a3b8' },
+];
+
+// Deterministic pseudo-random seed per category+index so the same card
+// always resolves to the same image.
+function seedFor(catId, index){ return `${catId}-${index}`; }
+
+// The single function to replace if you wire in a real image source.
+function imageUrl(catId, index, w, h){
+  return `https://picsum.photos/seed/${seedFor(catId,index)}/${w}/${h}`;
+}
+
+/* ========================================================================= */
+
+const state = {
+  activeCat: CATEGORIES[0].id,
+  shown: 0,
+  batch: 30,
+  size: 'cozy',
+  currentList: [],
+  lbIndex: 0,
+};
+
+const catGrid = document.getElementById('catGrid');
+const masonry = document.getElementById('masonry');
+const galIcon = document.getElementById('galIcon');
+const galName = document.getElementById('galName');
+const galCount = document.getElementById('galCount');
+const loadMoreWrap = document.getElementById('loadMoreWrap');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
+const loadMoreCount = document.getElementById('loadMoreCount');
+
+function catById(id){ return CATEGORIES.find(c=>c.id===id); }
+
+function renderCatGrid(filter=''){
+  catGrid.innerHTML = '';
+  const list = CATEGORIES.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+  if(!list.length){
+    catGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div>No categories match “${filter}”.</div>`;
+    return;
+  }
+  list.forEach(cat=>{
+    const el = document.createElement('button');
+    el.className = 'cat-pill' + (cat.id===state.activeCat ? ' active' : '');
+    el.style.setProperty('--accent', cat.accent);
+    el.innerHTML = `
+      <span class="glow"></span>
+      <span class="icon">${cat.icon}</span>
+      <span>
+        <span class="name" style="display:block">${cat.name}</span>
+        <span class="count mono">${PER_CATEGORY} wallpapers</span>
+      </span>`;
+    el.addEventListener('click', ()=> selectCategory(cat.id));
+    catGrid.appendChild(el);
+  });
+}
+
+function selectCategory(id){
+  state.activeCat = id;
+  state.shown = 0;
+  document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
+  renderCatGrid(document.getElementById('searchInput').value);
+  const cat = catById(id);
+  galIcon.textContent = cat.icon;
+  galName.textContent = cat.name;
+  masonry.innerHTML = '';
+  loadMore();
+  document.getElementById('gallery').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function makeCard(cat, index){
+  const w = 500, h = 700 + (index % 5) * 40; // slight height variance for masonry feel
+  const url = imageUrl(cat.id, index, w, h);
+  const card = document.createElement('div');
+  card.className = 'wcard';
+  card.innerHTML = `
+    <img loading="lazy" src="${url}" alt="${cat.name} wallpaper ${index}" width="${w}" height="${h}">
+    <button class="dl-quick" title="Quick download" aria-label="Quick download">⬇</button>
+    <div class="overlay"><span class="mono">${cat.id}-${String(index).padStart(3,'0')}</span></div>
+  `;
+  card.addEventListener('click', (e)=>{
+    if(e.target.closest('.dl-quick')){
+      e.stopPropagation();
+      triggerDownload(imageUrl(cat.id, index, 1920, 1080), `${cat.id}-${index}-pc.jpg`);
+      return;
+    }
+    openLightbox(cat, index);
+  });
+  return card;
+}
+
+function loadMore(){
+  const cat = catById(state.activeCat);
+  const end = Math.min(state.shown + state.batch, PER_CATEGORY);
+  for(let i=state.shown+1; i<=end; i++){
+    masonry.appendChild(makeCard(cat, i));
+  }
+  state.shown = end;
+  galCount.textContent = `${state.shown} shown of ${PER_CATEGORY}`;
+  loadMoreCount.textContent = `(+${Math.min(state.batch, PER_CATEGORY-state.shown)})`;
+  loadMoreWrap.style.display = state.shown >= PER_CATEGORY ? 'none' : 'flex';
+}
+loadMoreBtn.addEventListener('click', loadMore);
+
+document.querySelectorAll('.view-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.size = btn.dataset.size;
+    masonry.style.columns = state.size==='compact' ? '' : '';
+    masonry.className = 'masonry' + (state.size==='compact' ? ' compact' : '');
+    document.documentElement.style.setProperty('--m-cols', state.size==='compact' ? '160px' : '220px');
+    masonry.style.setProperty('columns', state.size==='compact' ? '6 160px' : '5 220px');
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  renderCatGrid(e.target.value);
+});
+
+document.getElementById('heroRandomBtn').addEventListener('click', (e)=>{
+  e.preventDefault();
+  const randomCat = CATEGORIES[Math.floor(Math.random()*CATEGORIES.length)];
+  selectCategory(randomCat.id);
+});
+
+/* ---------------- Lightbox ---------------- */
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbTitle = document.getElementById('lbTitle');
+const lbMeta1 = document.getElementById('lbMeta1');
+const lbMeta2 = document.getElementById('lbMeta2');
+
+function openLightbox(cat, index){
+  state.lbIndex = index;
+  state.lbCat = cat;
+  lbImg.src = imageUrl(cat.id, index, 900, 1200);
+  lbImg.alt = `${cat.name} wallpaper ${index}`;
+  lbTitle.textContent = `${cat.name} · ${String(index).padStart(3,'0')}`;
+  lbMeta1.textContent = `Category: ${cat.name}`;
+  lbMeta2.textContent = `ID: ${cat.id}-${String(index).padStart(3,'0')}`;
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) closeLightbox(); });
+document.addEventListener('keydown', (e)=>{
+  if(!lightbox.classList.contains('open')) return;
+  if(e.key==='Escape') closeLightbox();
+  if(e.key==='ArrowRight') navLightbox(1);
+  if(e.key==='ArrowLeft') navLightbox(-1);
+});
+function navLightbox(dir){
+  let idx = state.lbIndex + dir;
+  if(idx < 1) idx = PER_CATEGORY;
+  if(idx > PER_CATEGORY) idx = 1;
+  openLightbox(state.lbCat, idx);
+}
+document.getElementById('lbPrev').addEventListener('click', ()=>navLightbox(-1));
+document.getElementById('lbNext').addEventListener('click', ()=>navLightbox(1));
+
+/* ---------------- Download ---------------- */
+async function triggerDownload(url, filename){
+  showToast('Preparing download…');
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objUrl);
+    showToast(`Saved ${filename}`);
+  }catch(err){
+    // Fallback: open in new tab if fetch/blob is blocked (e.g. CORS)
+    window.open(url, '_blank');
+    showToast('Opened image in a new tab — save it from there');
+  }
+}
+
+document.getElementById('dlPc').addEventListener('click', ()=>{
+  const cat = state.lbCat, i = state.lbIndex;
+  triggerDownload(imageUrl(cat.id, i, 1920, 1080), `${cat.id}-${i}-pc-1920x1080.jpg`);
+});
+document.getElementById('dlMobile').addEventListener('click', ()=>{
+  const cat = state.lbCat, i = state.lbIndex;
+  triggerDownload(imageUrl(cat.id, i, 1080, 1920), `${cat.id}-${i}-mobile-1080x1920.jpg`);
+});
+
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> toast.classList.remove('show'), 2400);
+}
+
+/* ---------------- three.js hero ---------------- */
+(function initHero(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.z = 9;
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
+  const planeGeo = new THREE.PlaneGeometry(2.1, 3.0);
+  const panels = [];
+  const N = 16;
+  for(let i=0;i<N;i++){
+    const cat = CATEGORIES[i % CATEGORIES.length];
+    const tex = loader.load(imageUrl(cat.id, 200+i, 300, 420));
+    tex.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
+    const mat = new THREE.MeshBasicMaterial({ map:tex, transparent:true, opacity:0.88 });
+    const mesh = new THREE.Mesh(planeGeo, mat);
+    const radius = 6.5;
+    const angle = (i / N) * Math.PI * 2;
+    mesh.position.set(Math.cos(angle)*radius, (Math.random()-0.5)*4, Math.sin(angle)*radius - 3);
+    mesh.rotation.y = -angle;
+    mesh.scale.setScalar(0.65 + Math.random()*0.3);
+    group.add(mesh);
+    panels.push({ mesh, speed: 0.15 + Math.random()*0.2, baseY: mesh.position.y });
+  }
+
+  function resize(){
+    const w = canvas.clientWidth || window.innerWidth;
+    const h = canvas.clientHeight || window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e)=>{
+    mouseX = (e.clientX / window.innerWidth - 0.5);
+    mouseY = (e.clientY / window.innerHeight - 0.5);
+  });
+  window.addEventListener('deviceorientation', (e)=>{
+    if(e.gamma!=null && e.beta!=null){
+      mouseX = Math.max(-0.5, Math.min(0.5, e.gamma/45));
+      mouseY = Math.max(-0.5, Math.min(0.5, (e.beta-45)/45));
+    }
+  });
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let t = 0;
+  function animate(){
+    requestAnimationFrame(animate);
+    if(!reduceMotion){
+      t += 0.004;
+      group.rotation.y = t * 0.25 + mouseX * 0.5;
+      camera.position.x += (mouseX*1.5 - camera.position.x) * 0.03;
+      camera.position.y += (-mouseY*1.0 - camera.position.y) * 0.03;
+      camera.lookAt(0,0,-3);
+      panels.forEach((p,i)=>{ p.mesh.position.y = p.baseY + Math.sin(t*2 + i)* 0.15; });
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+/* ---------------- init ---------------- */
+renderCatGrid();
+selectCategory(state.activeCat);
+</script>
+</body>
+</html>
